@@ -6,59 +6,58 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-void error(const char* message) {
-    perror(message);
-    exit(1);
-}
-
 int main (int argc, char* argv[]) {
     if (argc < 2) {
         fprintf(stderr, "Invalid Command Error.\n");
         exit(1);
     }
-    int sockfd, newsockfd, portno, n;
+    int socket_fd, new_socket_fd, port_no, n;
     char buffer[255];
+    struct sockaddr_in server_addr, client_addr;
+    socklen_t client_len;
 
-    struct sockaddr_in serv_addr, cli_addr;
-    socklen_t clilen;
-
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);  // for TCP
-    if (sockfd < 0) {
-        error("Socket Failed.\n");
+    socket_fd = socket(AF_INET, SOCK_STREAM, 0);  
+    if (socket_fd < 0) {
+        perror("Socket Failed.\n");
+        exit(1);
     }
-    bzero((char*) &serv_addr, sizeof(serv_addr));  // clears any data in what its addressing to
-    portno = atoi(argv[1]);
+    bzero((char*) &server_addr, sizeof(server_addr));  // clears any data in what its addressing to
+    port_no = atoi(argv[1]);
 
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = INADDR_ANY;
-    serv_addr.sin_port = htons(portno);  // host-to-network-short
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_port = htons(port_no);
 
-    if(bind(sockfd, (struct sockaddr*) &serv_addr, sizeof(serv_addr)) < 0) {
-        error("Bind Failed.\n");
+    if(bind(socket_fd, (struct sockaddr*) &server_addr, sizeof(server_addr)) < 0) {
+        perror("Bind Failed.\n");
+        exit(1);
     }
 
-    listen(sockfd, 5);
-    clilen = sizeof(cli_addr);
+    listen(socket_fd, 5);
+    client_len = sizeof(client_addr);
 
-    newsockfd = accept(sockfd, (struct sockaddr*) &cli_addr, &clilen);
+    new_socket_fd = accept(socket_fd, (struct sockaddr*) &client_addr, &client_len);
 
-    if (newsockfd < 0) {
-        error("Accept Failed.\n");
+    if (new_socket_fd < 0) {
+        perror("Accept Failed.\n");
+        exit(1);
     }
 
     while (1) {
         bzero(buffer, 255);
-        n = read(newsockfd, buffer, 255);  // will have correspondent client-write
+        n = read(new_socket_fd, buffer, 255);  // will have correspondent client-write
         if (n < 0) {
-            error("Read Failed.\n");
+            perror("Read Failed.\n");
+            exit(1);
         }
         printf("Client: %s\n", buffer);
         bzero(buffer, 255);
         fgets(buffer, 255, stdin);
 
-        n = write(newsockfd, buffer, strlen(buffer));  // will have correspondent client-read
+        n = write(new_socket_fd, buffer, strlen(buffer));  // will have correspondent client-read
         if (n < 0) {
-            error("Write Failed.\n");
+            perror("Write Failed.\n");
+            exit(1);
         }
 
         int i = strncmp("Bye", buffer, 3);
@@ -66,7 +65,7 @@ int main (int argc, char* argv[]) {
             break;
     }
 
-    close(newsockfd);
-    close(sockfd);
+    close(new_socket_fd);
+    close(socket_fd);
     return 0;
 }

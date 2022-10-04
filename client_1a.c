@@ -7,30 +7,19 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
-void error(const char* message) {
-    perror(message);
-    exit(1);
-}
-
-/*
-    argv[0] : filename
-    argv[1] : server_ipaddress
-    argv[2] : portno
-*/
-
 int main (int argc, char* argv[]) {
     int sockfd, portno, n;
     struct sockaddr_in serv_addr;
     struct hostent* server;
     char buffer[255];
-    
+
     if (argc < 3) {
         fprintf(stderr, "Invalid Command Error.\n");
         exit(1);
     }
-    
+
     portno = atoi(argv[2]);
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);  // for TCP
+    sockfd = socket(AF_INET, SOCK_STREAM, 0); 
     if (sockfd < 0) {
         error("Socket Failed.\n");
     }
@@ -49,8 +38,12 @@ int main (int argc, char* argv[]) {
         error("Connection Failed.\n");
         exit(1);
     }
-    
-    while (1) {
+
+    for (int i = 1; i <= 10; ++i) {
+        int number;
+        printf("Enter request number %d:", i);
+        scanf("%d", number);
+        
         bzero(buffer, 255);
         fgets(buffer, 255, stdin);
         n = write(sockfd, buffer, strlen(buffer));
@@ -65,10 +58,7 @@ int main (int argc, char* argv[]) {
         printf("Server: %s", buffer);
 
         int i = strncmp("Bye", buffer, 3);
-        if (i == 0)
-            break;
     }
 
-    close(sockfd);
     return 0;
 }
