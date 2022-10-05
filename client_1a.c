@@ -8,8 +8,8 @@
 #include <netdb.h>
 
 int main (int argc, char* argv[]) {
-    int sockfd, portno, n;
-    struct sockaddr_in serv_addr;
+    int socket_fd, port_no, n;
+    struct sockaddr_in server_addr;
     struct hostent* server;
     char buffer[255];
 
@@ -18,46 +18,37 @@ int main (int argc, char* argv[]) {
         exit(1);
     }
 
-    portno = atoi(argv[2]);
-    sockfd = socket(AF_INET, SOCK_STREAM, 0); 
-    if (sockfd < 0) {
-        error("Socket Failed.\n");
+    port_no = atoi(argv[2]);
+    socket_fd = socket(AF_INET, SOCK_STREAM, 0); 
+    if (socket_fd < 0) {
+        perror("Socket Failed.\n");
     }
     
     server = gethostbyname(argv[1]);
     if (server == NULL) {
-        error("Error no such host");
+        perror("Error no such host");
         exit(1);
     }
-    bzero((char*) &serv_addr, sizeof(serv_addr));
-    serv_addr.sin_family = AF_INET;
-    bcopy((char*) server->h_addr, (char*) &serv_addr.sin_addr.s_addr, server->h_length);
-    serv_addr.sin_port = htons(portno);
+    bzero((char*) &server_addr, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    bcopy((char*) server->h_addr, (char*) &server_addr.sin_addr.s_addr, server->h_length);
+    server_addr.sin_port = htons(port_no);
     
-    if(connect(sockfd, (struct sockaddr*) &serv_addr, sizeof(serv_addr)) < 0) {
-        error("Connection Failed.\n");
+    if(connect(socket_fd, (struct sockaddr*) &server_addr, sizeof(server_addr)) < 0) {
+        perror("Connection Failed.\n");
         exit(1);
     }
 
-    for (int i = 1; i <= 10; ++i) {
-        int number;
-        printf("Enter request number %d:", i);
+    for (int i = 1; i <= 11; ++i) {
+        n = read(socket_fd, buffer, 255);
+        if (n < 0) {
+            perror("Read Failed");
+            exit(1);
+        }
+        int factorial;
         scanf("%d", number);
+        write(new_sock_fd, &number, sizeof(int));
         
-        bzero(buffer, 255);
-        fgets(buffer, 255, stdin);
-        n = write(sockfd, buffer, strlen(buffer));
-        if (n < 0) {
-            error("Write Failed.\n");
-        }
-        bzero(buffer, 255);
-        n = read(sockfd, buffer, 255);
-        if (n < 0) {
-            error("Read Failed.\n");
-        }
-        printf("Server: %s", buffer);
-
-        int i = strncmp("Bye", buffer, 3);
     }
 
     return 0;

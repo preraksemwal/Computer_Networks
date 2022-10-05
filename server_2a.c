@@ -21,7 +21,7 @@ int main (int argc, char* argv[]) {
         perror("Socket Failed.\n");
         exit(1);
     }
-    bzero((char*) &server_addr, sizeof(server_addr));  // clears any data in what its addressing to
+    bzero((char*) &server_addr, sizeof(server_addr));  
     port_no = atoi(argv[1]);
 
     server_addr.sin_family = AF_INET;
@@ -43,26 +43,30 @@ int main (int argc, char* argv[]) {
         exit(1);
     }
 
-    while (1) {
-        bzero(buffer, 255);
-        n = read(new_socket_fd, buffer, 255);  // will have correspondent client-write
-        if (n < 0) {
-            perror("Read Failed.\n");
-            exit(1);
-        }
-        printf("Client: %s\n", buffer);
-        bzero(buffer, 255);
-        fgets(buffer, 255, stdin);
-
-        n = write(new_socket_fd, buffer, strlen(buffer));  // will have correspondent client-read
+    while (new_socket_fd != NULL) {
+        int number, factorial = 1;
+        n = write(new_socket_fd, "Enter the number: ", strlen("Enter the number: "));
         if (n < 0) {
             perror("Write Failed.\n");
             exit(1);
         }
-
-        int i = strncmp("Bye", buffer, 3);
-        if (i == 0)
+        read(new_socket_fd, &number, sizeof(int));
+        if (number == 11)
             break;
+        while (number > 1) {
+            factorial *= number--;
+        }
+        write(new_socket_fd, &factorial, sizeof(int));
+
+        listen(socket_fd, 5);
+        client_len = sizeof(client_addr);
+
+        new_socket_fd = accept(socket_fd, (struct sockaddr*) &client_addr, &client_len);
+
+        if (new_socket_fd < 0) {
+            perror("Accept Failed.\n");
+            exit(1);
+        }
     }
 
     close(new_socket_fd);
