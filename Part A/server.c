@@ -6,21 +6,25 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+int check(int ret, const char* message) {
+	if (ret < 0) {
+		perror(message);
+		exit(1);
+	}
+	return ret;
+}
+
 int main (int argc, char* argv[]) {
     if (argc < 2) {
         fprintf(stderr, "Invalid Command Error.\n");
         exit(1);
     }
-    int socket_fd, new_socket_fd, port_no, n;
-    // char buffer[255];
+    int server_socket, client_socket, port_no, n;
     struct sockaddr_in server_addr, client_addr;
     socklen_t client_len;
 
-    socket_fd = socket(AF_INET, SOCK_STREAM, 0);  
-    if (socket_fd < 0) {
-        perror("Socket Failed.\n");
-        exit(1);
-    }
+    check(server_socket = socket(AF_INET, SOCK_STREAM, 0), "Server Socket Creation Failed.\n");
+    
     bzero((char*) &server_addr, sizeof(server_addr));  
     port_no = atoi(argv[1]);
 
@@ -28,34 +32,22 @@ int main (int argc, char* argv[]) {
     server_addr.sin_addr.s_addr = INADDR_ANY;
     server_addr.sin_port = htons(port_no);
 
-    if(bind(socket_fd, (struct sockaddr*) &server_addr, sizeof(server_addr)) < 0) {
-        perror("Bind Failed.\n");
-        exit(1);
-    }
+    check(bind(server_socket, (struct sockaddr*) &server_addr, sizeof(server_addr)), "Binding Failed.\n");
 
-    listen(socket_fd, 5);
+    listen(server_socket, 5);
     client_len = sizeof(client_addr);
 
-    new_socket_fd = accept(socket_fd, (struct sockaddr*) &client_addr, &client_len);
-
-    if (new_socket_fd < 0) {
-        perror("Accept Failed.\n");
-        exit(1);
-    }
+    check(client_socket = accept(server_socket, (struct sockaddr*) &client_addr, &client_len), "Accept Failed.\n");
     
     // opens the file
     FILE* file_ptr = fopen("file.txt", "w");
 
-
     int number = 0;
     while (1) {
         unsigned long long int factorial = 1;
-        n = write(new_socket_fd, "Enter the number: ", strlen("Enter the number: "));
-        if (n < 0) {
-            perror("Write Failed.\n");
-            exit(1);
-        }
-        read(new_socket_fd, &number, sizeof(int));
+        check(write(client_socket, "Enter the number: ", strlen("Enter the number: ")), "Write Failed.\n");
+        
+        read(client_socket, &number, sizeof(int));
         if (number > 20)
             break;
         for (int j = 2; j <= number; ++j)
@@ -65,13 +57,13 @@ int main (int argc, char* argv[]) {
         char address[INET_ADDRSTRLEN];
         inet_ntop( AF_INET, &server_addr.sin_addr, address, sizeof(address));
         
-        fprintf(file_ptr, "Address: %s, Port: %d, Factorial: %llu\n", address, htons(server_addr.sin_port), factorial);
-        write(new_socket_fd, &factorial, sizeof(unsigned long long int ));
+        fprintf(file_ptr, "Address: %s, Port: %d, Factorial of %d: %llu\n", address, htons(server_addr.sin_port), number, factorial);
+        write(client_socket, &factorial, sizeof(unsigned long long int ));
     }
 
     fclose(file_ptr);
-    close(new_socket_fd);
-    close(socket_fd);
+    close(client_socket);
+    close(server_socket);
     return 0;
 }
 // clear; gcc server.c -o server; ./server 9898
