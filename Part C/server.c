@@ -10,6 +10,7 @@
 #include <pthread.h>
 
 #define SERVER_PORT 4444
+struct sockaddr_in server_addr;
 
 int check(int ret, const char* message) {
 	if (ret < 0) {
@@ -33,9 +34,9 @@ void* handle_connection(void* ptr_client_socket) {
 	for (int j = 2; j <= number; ++j)   
 		factorial *= j;
 	
-	// char address[INET_ADDRSTRLEN];
-	// inet_ntop(AF_INET, &server_addr.sin_addr, address, sizeof(address));    
-	fprintf(file_ptr, "Factorial of %d: %llu\n", number, factorial);
+	char address[INET_ADDRSTRLEN];
+	inet_ntop(AF_INET, &server_addr.sin_addr, address, sizeof(address));  
+	fprintf(file_ptr, "Address: %s, Port: %d, Factorial of %d: %llu\n", address, htons(server_addr.sin_port), number, factorial);  
 	write(client_socket, &factorial, sizeof(unsigned long long int ));
 	fclose(file_ptr);
 	return NULL;
@@ -46,7 +47,7 @@ int main(int argc, char** argv){
 	remove("file.txt");
 	
 	int server_socket, client_socket, addr_size;
-	struct sockaddr_in server_addr, client_addr;
+	struct sockaddr_in client_addr;
 
 	check(server_socket = socket(AF_INET, SOCK_STREAM, 0), "Server Socket Creation Failed.\n");
 	
