@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <time.h>
 
 #define PORT 4444
 

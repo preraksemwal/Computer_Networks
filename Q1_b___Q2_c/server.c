@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 #include <stdbool.h>
 #include <pthread.h>
+#include <time.h>
 
 #define SERVER_PORT 4444
 struct sockaddr_in server_addr;
