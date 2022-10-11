@@ -9,14 +9,14 @@
 #include <stdbool.h>
 #include <pthread.h>
 
-#define SERVERPORT 4444
+#define SERVER_PORT 4444
 
-int check(int exp, const char* msg) {
-	if (exp == -1) {
-		perror(msg);
+int check(int ret, const char* message) {
+	if (ret < 0) {
+		perror(message);
 		exit(1);
 	}
-	return exp;
+	return ret;
 }
 
 void* handle_connection(void* ptr_client_socket) {
@@ -52,7 +52,7 @@ int main(int argc, char** argv){
 	
 	// initialize address struct
 	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons(SERVERPORT);
+	server_addr.sin_port = htons(SERVER_PORT);
 	server_addr.sin_addr.s_addr = INADDR_ANY;
 	
 	check(bind(server_socket, (struct sockaddr*)&server_addr, sizeof(server_addr)), "Binding Failed.\n");

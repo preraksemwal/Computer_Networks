@@ -10,16 +10,16 @@
 
 #define PORT 4444
 
-int check(int exp, const char* msg) {
-	if (exp < 0) {
-		perror(msg);
+int check(int ret, const char* message) {
+	if (ret < 0) {
+		perror(message);
 		exit(1);
 	}
-	return exp;
+	return ret;
 }
 
 void* routine(void* ptr_i) {
-	printf("routine called\n");
+	
 	int i = *((int*)ptr_i);
 	free(ptr_i);
 
