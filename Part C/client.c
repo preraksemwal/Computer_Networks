@@ -11,7 +11,7 @@
 #define PORT 4444
 
 int check(int exp, const char* msg) {
-	if (exp == -1) {
+	if (exp < 0) {
 		perror(msg);
 		exit(1);
 	}
@@ -19,27 +19,28 @@ int check(int exp, const char* msg) {
 }
 
 void* routine(void* ptr_i) {
+	printf("routine called\n");
 	int i = *((int*)ptr_i);
 	free(ptr_i);
 
-    int socket_fd, ret, n;
-	struct sockaddr_in serverAddr;
+    int client_socket;
+	struct sockaddr_in server_addr;
 	char buffer[1024];
 
-	check(socket_fd = socket(AF_INET, SOCK_STREAM, 0), "Client Socket Creation Failed");
+	check(client_socket = socket(AF_INET, SOCK_STREAM, 0), "Client Socket Creation Failed");
 
-	memset(&serverAddr, '\0', sizeof(serverAddr));
-	serverAddr.sin_family = AF_INET;
-	serverAddr.sin_port = htons(PORT);
-	serverAddr.sin_addr.s_addr = INADDR_ANY;
+	memset(&server_addr, '\0', sizeof(server_addr));
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_port = htons(PORT);
+	server_addr.sin_addr.s_addr = INADDR_ANY;
 
-	check(connect(socket_fd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)), "Connect Failed");
+	check(connect(client_socket, (struct sockaddr*)&server_addr, sizeof(server_addr)), "Connect Failed");
 	
-    check(read(socket_fd, buffer, 255), "Read Failed");
+    check(read(client_socket, buffer, 255), "Read Failed");
     
     unsigned long long int  factorial;
-    write(socket_fd, &i, sizeof(int));
-    read(socket_fd, &factorial, sizeof(unsigned long long int ));
+    write(client_socket, &i, sizeof(int));
+    read(client_socket, &factorial, sizeof(unsigned long long int));
     printf("Factorial of %d = %llu\n", i, factorial);
 }
 
@@ -49,6 +50,7 @@ int main(int arc, char** argv){
 		int* ptr_i = malloc(sizeof(int));
 		*ptr_i = i;
         pthread_create(&t, NULL, routine, ptr_i);
+		pthread_join(t, NULL);
     }
 	return 0;
 }
