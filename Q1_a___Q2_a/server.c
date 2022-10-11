@@ -5,6 +5,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
+#include <time.h>
 
 int check(int ret, const char* message) {
 	if (ret < 0) {
@@ -15,6 +17,7 @@ int check(int ret, const char* message) {
 }
 
 int main (int argc, char* argv[]) {
+    clock_t tic = clock();
     if (argc < 2) {
         fprintf(stderr, "Invalid Command Error.\n");
         exit(1);
@@ -64,6 +67,9 @@ int main (int argc, char* argv[]) {
     fclose(file_ptr);
     close(client_socket);
     close(server_socket);
+
+    clock_t toc = clock();
+    printf("Time Elapsed: %f seconds\n", (double)(toc - tic) / CLOCKS_PER_SEC);
     return 0;
 }
 // clear; gcc server.c -o server; ./server 9898

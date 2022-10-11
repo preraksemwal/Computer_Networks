@@ -19,7 +19,8 @@ int check(int ret, const char* message) {
 
 int main(){
     remove("file.txt");
-
+	clock_t tic = clock();
+	
 	int server_socket, ret, client_socket;
 	struct sockaddr_in server_addr, client_addr;
 	socklen_t addr_size;
@@ -63,5 +64,8 @@ int main(){
 	}
 
 	close(client_socket);
+
+	clock_t toc = clock();
+    printf("Time Elapsed: %f seconds\n", (double)(toc - tic) / CLOCKS_PER_SEC);
 	return 0;
 }

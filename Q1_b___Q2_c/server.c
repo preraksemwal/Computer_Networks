@@ -43,9 +43,9 @@ void* handle_connection(void* ptr_client_socket) {
 }
 
 int main(int argc, char** argv){
-    
 	remove("file.txt");
 	
+	clock_t tic = clock();
 	int server_socket, client_socket, addr_size;
 	struct sockaddr_in client_addr;
 
@@ -73,5 +73,8 @@ int main(int argc, char** argv){
 		pthread_join(t, NULL);
 	}
 	close(server_socket);
+
+	clock_t toc = clock();
+    printf("Time Elapsed: %f seconds\n", (double)(toc - tic) / CLOCKS_PER_SEC);
 	return 0;
 }
