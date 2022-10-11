@@ -26,8 +26,8 @@ void* routine(int i) {
 	memset(&serverAddr, '\0', sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_port = htons(PORT);
-	// serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
-    bcopy((char*) server->h_addr, (char*) &server_addr.sin_addr.s_addr, server->h_length);
+	serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    // bcopy((char*) server->h_addr, (char*) &server_addr.sin_addr.s_addr, server->h_length);
 
 	ret = connect(socket_fd, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
 	if(ret < 0){
